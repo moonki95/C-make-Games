@@ -1,3 +1,9 @@
+/*
+제목: 빙고 게임 만들기
+만든이: 이한주
+만든 날짜: 2018-09-20
+*/
+
 #include <iostream>
 #include <ctime>
 
