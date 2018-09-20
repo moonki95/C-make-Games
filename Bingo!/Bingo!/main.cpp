@@ -33,6 +33,9 @@ int main(void)
 	}
 
 	bool finish = false;
+
+	int bingoLine = 0;
+	
 	while (!finish)
 	{
 		system("cls");
@@ -48,6 +51,11 @@ int main(void)
 				cout << '\n';
 		}
 
+		
+		cout << "Bingo Line: " << bingoLine << endl;
+		if (bingoLine == 5)
+			break;
+		
 		cout << "숫자를 입력하세요(0 종료)> ";
 		int input;
 		cin >> input;
@@ -55,10 +63,11 @@ int main(void)
 		// 종료조건
 		if (input == 0)
 			finish = true;
-
+		
 		// 예외 처리
 		if (input < 1 || input > 25)
 			continue;
+		
 
 		// 중복 체크
 		bool bAcc = true;
@@ -75,6 +84,60 @@ int main(void)
 			}
 		}
 
+		// 빙고 체크
+		int star;
+		bingoLine = 0;
+		
+		// 가로 빙고 체크
+		for (int i = 0; i < 5; i++)
+		{
+			star = 0;
+			for (int j = 0; j < 5; j++)
+			{
+				if (iNumber[i * 5 + j] == STAR)
+					star++;
+			}
+
+			if (star == 5)
+				bingoLine++;
+		}
+
+		// 세로 빙고 체크
+		for (int i = 0; i < 5; i++)
+		{
+			star = 0;
+			for (int j = 0; j < 5; j++)
+			{
+				if (iNumber[i + j * 5] == STAR)
+					star++;
+			}
+
+			if (star == 5)
+				bingoLine++;
+		}
+
+		// 대각선(좌상단 -> 우하단) 빙고 체크
+		star = 0;
+		for (int i = 0; i < 25; i+= 6)
+		{
+			if (iNumber[i] == STAR)
+				star++;
+
+			if (star == 5)
+				bingoLine++;
+		}
+
+		// 대각선(우상단 -> 좌하단) 빙고 체크
+		star = 0;
+		for (int i = 4; i <= 20; i += 4)
+		{
+			if (iNumber[i] == STAR)
+				star++;
+
+			if (star == 5)
+				bingoLine++;
+		}
+		
 	}
 
 	return 0;
