@@ -10,9 +10,16 @@
 
 using namespace std;
 
-enum {EASY = 1, HARD};
+enum AI_MODE {EASY = 1, HARD};	// AI 난이도
 
-const int STAR = -1;
+enum LINE// 빙고 라인 12개
+{
+	LN_H1, LN_H2, LN_H3, LN_H4, LN_H5,	// 가로 빙고 라인
+	LN_V1, LN_V2, LN_V3, LN_V4, LN_V5,	// 세로 빙고 라인
+	LN_LT, LN_RT	// 대각선 빙고 라인
+};
+
+const int STAR = -1;	// * 표시를 위한 변수 STAR
 
 int main(void)
 {
@@ -61,14 +68,14 @@ int main(void)
 
 	int bingoLine = 0, AIbingoLine = 0;	// user와 AI의 빙고 수
 
-	bool user = true; // user입력 판별
+	bool userSelect = true; // user입력 판별
 	
 	while (!finish)
 	{
 		system("cls");
 
 		// 유저 빙고 출력
-		cout << "User" << endl;
+		cout << "================User===============" << endl;
 		for (int i = 0; i < 25; i++)
 		{
 			if (iNumber[i] == STAR)
@@ -82,13 +89,14 @@ int main(void)
 
 		cout << "User Bingo Line: " << bingoLine << endl << endl;
 		if (bingoLine >= 5)
+
 		{
 			cout << "User 승리!" << endl;
 			break;
 		}
 
 		// AI 빙고 출력
-		cout << "AI" << endl;
+		cout << "=================AI================" << endl;
 		for (int i = 0; i < 25; i++)
 		{
 			if (AINumber[i] == STAR)
@@ -109,7 +117,7 @@ int main(void)
 		
 		int input;	// 숫자 입력 변수
 		
-		if (user) // user 선택
+		if (userSelect) // user 선택
 		{
 			// 숫자 입력
 			cout << "숫자를 입력하세요(0 종료)> ";
@@ -123,7 +131,8 @@ int main(void)
 			if (input < 1 || input > 25)
 				continue;
 
-			user = false;
+			// 유저가 한번 선택 한 후 AI가 선택
+			userSelect = false;
 		}
 		else // AI 선택
 		{
@@ -137,18 +146,134 @@ int main(void)
 						arr[count++] = AINumber[i];
 				}
 				input = arr[rand() % count];
-				user = true;
 			}
-
-			if (mode == HARD)
+				
+			if (mode == HARD)	// 가장 빙고 가능성이 높은 라인에서 선택
 			{
+				int count = 0;
+				int max_star = 0;	// 5개 이하중에서 가장 많은 별의 개수
+				int line = 0;		// max_star의 라인 (enum LINE에서 선택)
+
+				for (int i = 0; i < 5; i++)
+				{
+					count = 0;
+					for (int j = 0; j < 5; j++)
+					{
+						// 가로 라인 체크
+						if (AINumber[i * 5 + j] == STAR)
+						{
+							++count;
+						}
+
+						if (max_star <= count && count < 5)
+						{
+							line = i;
+							max_star = count;
+						}
+					}
+				}
+
+				for (int i = 0; i < 5; i++)
+				{
+					count = 0;
+					for (int j = 0; j < 5; j++)
+					{
+						// 세로 라인 체크
+						if (AINumber[i + j * 5] == STAR)
+						{
+							++count;
+						}
+
+						if (max_star < count && count < 5)
+						{
+							line = i + 5;
+							max_star = count;
+						}
+					}
+				}
+
+				// 왼쪽 -> 오른쪽 대각선 체크
+				count = 0;
+				for (int i = 0; i < 25; i += 6)
+				{
+					if (AINumber[i] == STAR)
+					{
+						++count;
+					}
+				}
+				if (max_star < count && count < 5)
+				{
+					line = LN_LT;
+					max_star = count;
+				}
+
+				// 오른쪽 -> 왼쪽 대각선 체크
+				count = 0;
+				for (int i = 4; i <= 20; i += 4)
+				{
+					if (AINumber[i] == STAR)
+					{
+						++count;
+					}
+				}
+				if (max_star < count && count < 5)
+				{
+					line = LN_RT;
+					max_star = count;
+				}
+
+				if (line <= LN_H5) // 가로 줄이 최대 일 경우
+				{
+					for (int i = 0; i < 5; i++)
+					{
+						if (AINumber[line * 5 + i] != STAR)
+						{
+							input = AINumber[line * 5 + i];
+							break;
+						}
+					}
+				}
+				else if (line <= LN_V5) // 세로 줄이 최대일 경우
+				{
+					for (int i = 0; i < 5; i++)
+					{
+						if (AINumber[(line - 5) + i * 5] != STAR)
+						{
+							input = AINumber[(line - 5) + 5 * i];
+							break;
+						}
+					}
+				}
+				else if (line == LN_LT) // 왼쪽 -> 오른쪽 대각선이 최대일 경우
+				{
+					for (int i = 0; i < 25; i += 6)
+					{
+						if (AINumber[i] != STAR)
+						{
+							input = AINumber[i];
+							break;
+						}
+					}
+				}
+				else    // 오른쪽 -> 왼쪽 대각선이 최대일 경우
+				{
+					for (int i = 4; i <= 20; i += 4)
+					{
+						if (AINumber[i] != STAR)
+						{
+							input = AINumber[i];
+							break;
+						}
+					}
+				}
 
 			}
-
+			
+			userSelect = true; // AI가 선택 후 user가 선택
 			cout << "AI 선택: " << input << endl;
 			Sleep(2000);
 		}
-
+			
 		// 유저 중복 체크
 		bool bAcc = true;
 		for (int i = 0; i < 25; i++)
